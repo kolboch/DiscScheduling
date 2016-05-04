@@ -11,6 +11,7 @@ public class DiscResource {
 	private int numberOfCylinders;
 	private int distanceCovered;
 	private int currentTime;
+	private int currentCylinder;
 	
 	private Queue<Request> requestQueue;
 	private Queue<Request> realTimeRequestQueue;
@@ -19,18 +20,28 @@ public class DiscResource {
 		this.numberOfCylinders = numberOfCylinders;
 		this.requestQueue = new PriorityQueue<>(new ApproachRequestComparator());
 		this.realTimeRequestQueue = new PriorityQueue<>(new ApproachRequestComparator());
+		this.currentCylinder = 0;
 	}
 	
-	public int getDistanceCovered(){
-		return this.distanceCovered;
+	public int FCFS_algorithm(){
+		//TODO
+		
+		return 0;
 	}
 	
-	private int getNumberOfCylinders(){
-		return numberOfCylinders;
+	public int SSTF_algorithm(){
+		//TODO
+		return 0;
 	}
 	
-	private void enqueueRequest(Request req){
-		requestQueue.offer(req);
+	public int SCAN_Algorithm(){
+		//TODO
+		return 0;
+	}
+	
+	public int CSCAN_Algorithm(){
+		//TODO
+		return 0;
 	}
 	
 	private Request getNextRequest(){
@@ -86,5 +97,25 @@ public class DiscResource {
 	
 	private void addDistanceCovered(int distanceCovered){
 		this.distanceCovered += distanceCovered;
+	}
+	
+	private void addDistanceCovered(Request lastRequest){
+		addDistanceCovered(distanceCovered(lastRequest));
+	}
+	
+	private int distanceCovered(Request req){
+		return Math.abs(req.getCylinderToRead() - this.currentCylinder);
+	}
+	
+	public int getDistanceCovered(){
+		return this.distanceCovered;
+	}
+	
+	private int getNumberOfCylinders(){
+		return numberOfCylinders;
+	}
+	
+	private void enqueueRequest(Request req){
+		requestQueue.offer(req);
 	}
 }
