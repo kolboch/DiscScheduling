@@ -21,12 +21,28 @@ public class DiscResource {
 		this.requestQueue = new PriorityQueue<>(new ApproachRequestComparator());
 		this.realTimeRequestQueue = new PriorityQueue<>(new ApproachRequestComparator());
 		this.currentCylinder = 0;
+		this.currentTime = 0;
+		this.distanceCovered = 0;
 	}
 	
 	public int FCFS_algorithm(){
-		//TODO
 		
-		return 0;
+		reset();
+		
+		while(!hasFinished()){
+			
+			Request currentRequest = getNextRequest();
+			if(currentRequest == null){
+				addElapsedTime(3);
+			}
+			else
+			{
+				addDistanceCovered(currentRequest);
+				addElapsedTime(1);
+				setCurrentCylinder(currentRequest.getCylinderToRead());
+			}
+		}
+		return distanceCovered;
 	}
 	
 	public int SSTF_algorithm(){
@@ -73,18 +89,13 @@ public class DiscResource {
 		}
 	}
 	
-	private boolean hasNextRequest(){
-		
-		if(!realTimeRequestQueue.isEmpty()){
-			return true;
-		}
-		else if(!requestQueue.isEmpty()){
+	private boolean hasFinished(){
+		if(requestQueue.isEmpty() && realTimeRequestQueue.isEmpty()){
 			return true;
 		}
 		else{
 			return false;
 		}
-		
 	}
 	
 	private int getCurrentTime(){
@@ -107,6 +118,10 @@ public class DiscResource {
 		return Math.abs(req.getCylinderToRead() - this.currentCylinder);
 	}
 	
+	private void setCurrentCylinder(int cylinder){
+		this.currentCylinder = cylinder;
+	}
+	
 	public int getDistanceCovered(){
 		return this.distanceCovered;
 	}
@@ -115,7 +130,29 @@ public class DiscResource {
 		return numberOfCylinders;
 	}
 	
-	private void enqueueRequest(Request req){
+	public void enqueueRequest(Request req){
 		requestQueue.offer(req);
+	}
+	
+	public void enqueueRequests(Request[]requestArray){
+		for(int i = 0; i < requestArray.length; i++){
+			enqueueRequest(requestArray[i]);
+		}
+	}
+	
+	public void enqueueRealTimeRequest(Request req){
+		realTimeRequestQueue.offer(req);
+	}
+	
+	public void enqueueRealTimeRequests(Request[]requestArray){
+		for(int i = 0; i < requestArray.length; i++){
+			enqueueRealTimeRequest(requestArray[i]);
+		}
+	}
+	
+	private void reset(){
+		this.distanceCovered = 0;
+		this.currentTime = 0;
+		this.currentCylinder = 0;
 	}
 }
