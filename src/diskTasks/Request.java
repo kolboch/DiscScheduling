@@ -17,4 +17,8 @@ public class Request {
 	public int getCylinderToRead(){
 		return cylinderToRead;
 	}
+	
+	public String toString(){
+		return String.format("%6d %6d", cylinderToRead, approachTime);
+	}
 }

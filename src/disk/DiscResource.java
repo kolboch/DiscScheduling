@@ -30,8 +30,8 @@ public class DiscResource {
 		reset();
 		
 		while(!hasFinished()){
-			
 			Request currentRequest = getNextRequest();
+			
 			if(currentRequest == null){
 				addElapsedTime(3);
 			}
@@ -42,12 +42,26 @@ public class DiscResource {
 				setCurrentCylinder(currentRequest.getCylinderToRead());
 			}
 		}
-		return distanceCovered;
+		return getDistanceCovered();
 	}
 	
 	public int SSTF_algorithm(){
-		//TODO
-		return 0;
+		
+		reset();
+		
+		while(!hasFinished()){
+			
+			Request current = getClosestAvailable();
+			if(current == null){
+				addElapsedTime(3);
+			}
+			else{
+				addDistanceCovered(current);
+				addElapsedTime(1);
+				setCurrentCylinder(current.getCylinderToRead());
+			}
+		}
+		return getDistanceCovered();
 	}
 	
 	public int SCAN_Algorithm(){
@@ -63,7 +77,7 @@ public class DiscResource {
 	private Request getNextRequest(){
 		
 		if(!realTimeRequestQueue.isEmpty()){
-			if(realTimeRequestQueue.peek().getApproachTime() > getCurrentTime()){
+			if(realTimeRequestQueue.peek().getApproachTime() <= getCurrentTime()){
 				return realTimeRequestQueue.poll();
 			}
 		}
@@ -75,7 +89,7 @@ public class DiscResource {
 				
 				// for not FCFS algorithm we will change comparator 
 				// so we will get valid request but sorted according to actual comparator
-				if(r.getApproachTime() > getCurrentTime()){ 
+				if(r.getApproachTime() <= getCurrentTime()){ 
 					nextRequest = r;
 					break;
 				}
@@ -89,6 +103,46 @@ public class DiscResource {
 		}
 	}
 	
+	private Request getClosestAvailable(){
+		
+		Request closest = null;
+		int minDistance = this.numberOfCylinders;
+		
+		if(!realTimeRequestQueue.isEmpty()){
+			
+			for(Request req : realTimeRequestQueue){
+				if(req.getApproachTime() <= getCurrentTime()){
+					if(distanceFromCurrent(req) < minDistance){
+						closest = req;
+						minDistance = distanceFromCurrent(req);
+					}
+				}
+			}
+			if(closest != null){
+				realTimeRequestQueue.remove(closest);
+				return closest;
+			}
+		}
+		
+		if(!requestQueue.isEmpty()){
+			
+			for(Request req : requestQueue){
+				if(req.getApproachTime() <= getCurrentTime()){
+					if(distanceFromCurrent(req) < minDistance){
+						closest = req;
+						minDistance = distanceFromCurrent(req);
+					}
+				}
+			}
+			if(closest != null){
+				requestQueue.remove(closest);
+				return closest;
+			}
+		}
+		
+		return closest;
+	}
+	
 	private boolean hasFinished(){
 		if(requestQueue.isEmpty() && realTimeRequestQueue.isEmpty()){
 			return true;
@@ -96,6 +150,10 @@ public class DiscResource {
 		else{
 			return false;
 		}
+	}
+	
+	private int distanceFromCurrent(Request r){
+		return Math.abs(r.getCylinderToRead() - currentCylinder);
 	}
 	
 	private int getCurrentTime(){
@@ -154,5 +212,12 @@ public class DiscResource {
 		this.distanceCovered = 0;
 		this.currentTime = 0;
 		this.currentCylinder = 0;
+	}
+	
+	public void printRequestQueue(){
+		Object[]array = requestQueue.toArray();
+		for(int i = 0; i < array.length; i++){
+			System.out.println(array[i].toString());
+		}
 	}
 }
