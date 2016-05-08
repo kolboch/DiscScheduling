@@ -78,7 +78,11 @@ public class DiscResource {
 				setCurrentCylinder(current.getCylinderToRead());
 				current = nextUp();
 			}
+			
+			if(!hasFinished()){
+			addDistanceCovered(numberOfCylinders - currentCylinder);
 			currentCylinder = numberOfCylinders;
+			}
 			
 			current = nextDown();
 			while(current != null){
@@ -87,16 +91,39 @@ public class DiscResource {
 				setCurrentCylinder(current.getCylinderToRead());
 				current = nextDown();
 			}
-			currentCylinder = 0;
 			
+			if(!hasFinished()){
+			addDistanceCovered(currentCylinder);
+			currentCylinder = 0;
 			addElapsedTime(10);
+			}
+			
 		}
 		return getDistanceCovered();
 	}
 	
 	public int CSCAN_Algorithm(){
-		//TODO
-		return 0;
+		
+		reset();
+		addElapsedTime(10);
+		
+		while(!hasFinished()){
+			
+			Request current = nextUp();
+			while(current != null){
+				addDistanceCovered(current);
+				addElapsedTime(5);
+				setCurrentCylinder(current.getCylinderToRead());
+				current = nextUp();
+			}
+			if(!hasFinished()){
+			addDistanceCovered(numberOfCylinders - currentCylinder);
+			currentCylinder = 0;
+			addElapsedTime(10);
+			}
+		}
+		
+		return getDistanceCovered();
 	}
 	
 	private Request nextUp(){
