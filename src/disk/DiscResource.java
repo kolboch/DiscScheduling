@@ -65,8 +65,33 @@ public class DiscResource {
 	}
 	
 	public int SCAN_Algorithm(){
-		//TODO
-		return 0;
+		
+		reset();
+		addElapsedTime(10);
+		
+		while(!hasFinished()){
+			
+			Request current = nextUp();
+			while(current != null){
+				addDistanceCovered(current);
+				addElapsedTime(5);
+				setCurrentCylinder(current.getCylinderToRead());
+				current = nextUp();
+			}
+			currentCylinder = numberOfCylinders;
+			
+			current = nextDown();
+			while(current != null){
+				addDistanceCovered(current);
+				addElapsedTime(5);
+				setCurrentCylinder(current.getCylinderToRead());
+				current = nextDown();
+			}
+			currentCylinder = 0;
+			
+			addElapsedTime(10);
+		}
+		return getDistanceCovered();
 	}
 	
 	public int CSCAN_Algorithm(){
@@ -74,10 +99,86 @@ public class DiscResource {
 		return 0;
 	}
 	
+	private Request nextUp(){
+		
+		Request next = null;
+		int minDist = numberOfCylinders;
+		
+		if(!realTimeRequestQueue.isEmpty()){
+			
+			for(Request req : realTimeRequestQueue){
+				if(currentTime >= req.getApproachTime() && req.getCylinderToRead() >= currentCylinder){
+					if(distanceFromCurrent(req) < minDist){
+							next = req;
+							minDist = distanceFromCurrent(req);
+					}
+				}
+				if(next != null){
+					realTimeRequestQueue.remove(next);
+					return next;
+				}
+			}
+		}
+		if(!requestQueue.isEmpty()){
+		
+			for(Request req : requestQueue){
+				if(currentTime >= req.getApproachTime() && req.getCylinderToRead() >= currentCylinder){
+					if(distanceFromCurrent(req) < minDist){
+						next = req;
+						minDist = distanceFromCurrent(req);
+					}
+				}
+			}
+			if(next != null){
+				requestQueue.remove(next);
+				return next;
+			}
+		}
+		return next;
+	}
+	
+	private Request nextDown(){
+		
+		Request next = null;
+		int minDist = numberOfCylinders;
+		
+		if(!realTimeRequestQueue.isEmpty()){
+			
+			for(Request req : realTimeRequestQueue){
+				if(currentTime >= req.getApproachTime() && req.getCylinderToRead() <= currentCylinder){
+					if(distanceFromCurrent(req) < minDist){
+							next = req;
+							minDist = distanceFromCurrent(req);
+					}
+				}
+				if(next != null){
+					realTimeRequestQueue.remove(next);
+					return next;
+				}
+			}
+		}
+		if(!requestQueue.isEmpty()){
+		
+			for(Request req : requestQueue){
+				if(currentTime >= req.getApproachTime() && req.getCylinderToRead() <= currentCylinder){
+					if(distanceFromCurrent(req) < minDist){
+						next = req;
+						minDist = distanceFromCurrent(req);
+					}
+				}
+			}
+			if(next != null){
+				requestQueue.remove(next);
+				return next;
+			}
+		}
+		return next;
+	}
+	
 	private Request getNextRequest(){
 		
 		if(!realTimeRequestQueue.isEmpty()){
-			if(realTimeRequestQueue.peek().getApproachTime() <= getCurrentTime()){
+			if(currentTime >= realTimeRequestQueue.peek().getApproachTime()){
 				return realTimeRequestQueue.poll();
 			}
 		}
@@ -89,7 +190,7 @@ public class DiscResource {
 				
 				// for not FCFS algorithm we will change comparator 
 				// so we will get valid request but sorted according to actual comparator
-				if(r.getApproachTime() <= getCurrentTime()){ 
+				if(currentTime >= r.getApproachTime()){ 
 					nextRequest = r;
 					break;
 				}
@@ -111,7 +212,7 @@ public class DiscResource {
 		if(!realTimeRequestQueue.isEmpty()){
 			
 			for(Request req : realTimeRequestQueue){
-				if(req.getApproachTime() <= getCurrentTime()){
+				if(currentTime >= req.getApproachTime()){
 					if(distanceFromCurrent(req) < minDistance){
 						closest = req;
 						minDistance = distanceFromCurrent(req);
@@ -127,7 +228,7 @@ public class DiscResource {
 		if(!requestQueue.isEmpty()){
 			
 			for(Request req : requestQueue){
-				if(req.getApproachTime() <= getCurrentTime()){
+				if(currentTime >= req.getApproachTime()){
 					if(distanceFromCurrent(req) < minDistance){
 						closest = req;
 						minDistance = distanceFromCurrent(req);
@@ -156,7 +257,7 @@ public class DiscResource {
 		return Math.abs(r.getCylinderToRead() - currentCylinder);
 	}
 	
-	private int getCurrentTime(){
+	public int getCurrentTime(){
 		return this.currentTime;
 	}
 	
@@ -182,10 +283,6 @@ public class DiscResource {
 	
 	public int getDistanceCovered(){
 		return this.distanceCovered;
-	}
-	
-	private int getNumberOfCylinders(){
-		return numberOfCylinders;
 	}
 	
 	public void enqueueRequest(Request req){
