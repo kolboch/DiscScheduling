@@ -1,5 +1,6 @@
 package disk;
 
+import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -15,9 +16,11 @@ public class DiscResource {
 	
 	private Queue<Request> requestQueue;
 	private Queue<Request> realTimeRequestQueue;
+	private ArrayList<Request> requestsServed;
 	
 	public DiscResource(int numberOfCylinders){
 		this.numberOfCylinders = numberOfCylinders;
+		this.requestsServed = new ArrayList<Request>();
 		this.requestQueue = new PriorityQueue<>(new ApproachRequestComparator());
 		this.realTimeRequestQueue = new PriorityQueue<>(new ApproachRequestComparator());
 		this.currentCylinder = 0;
@@ -38,6 +41,7 @@ public class DiscResource {
 			else
 			{
 				addDistanceCovered(currentRequest);
+				requestsServed.add(currentRequest); // for printing
 				addElapsedTime(1);
 				setCurrentCylinder(currentRequest.getCylinderToRead());
 			}
@@ -53,10 +57,11 @@ public class DiscResource {
 			
 			Request current = getClosestAvailable();
 			if(current == null){
-				addElapsedTime(3);
+				addElapsedTime(5);
 			}
 			else{
 				addDistanceCovered(current);
+				requestsServed.add(current); // for printing
 				addElapsedTime(1);
 				setCurrentCylinder(current.getCylinderToRead());
 			}
@@ -74,7 +79,8 @@ public class DiscResource {
 			Request current = nextUp();
 			while(current != null){
 				addDistanceCovered(current);
-				addElapsedTime(5);
+				requestsServed.add(current); // for printing
+				addElapsedTime(1);
 				setCurrentCylinder(current.getCylinderToRead());
 				current = nextUp();
 			}
@@ -82,12 +88,14 @@ public class DiscResource {
 			if(!hasFinished()){
 			addDistanceCovered(numberOfCylinders - currentCylinder);
 			currentCylinder = numberOfCylinders;
+			requestsServed.add(new Request(0,numberOfCylinders)); // for perfect visualization of algorithm
 			}
 			
 			current = nextDown();
 			while(current != null){
 				addDistanceCovered(current);
-				addElapsedTime(5);
+				requestsServed.add(current); // for printing
+				addElapsedTime(1);
 				setCurrentCylinder(current.getCylinderToRead());
 				current = nextDown();
 			}
@@ -96,6 +104,7 @@ public class DiscResource {
 			addDistanceCovered(currentCylinder);
 			currentCylinder = 0;
 			addElapsedTime(10);
+			requestsServed.add(new Request(0,0)); // for perfect visualization of algorithm
 			}
 			
 		}
@@ -112,12 +121,15 @@ public class DiscResource {
 			Request current = nextUp();
 			while(current != null){
 				addDistanceCovered(current);
-				addElapsedTime(5);
+				requestsServed.add(current); // for printing
+				addElapsedTime(1);
 				setCurrentCylinder(current.getCylinderToRead());
 				current = nextUp();
 			}
 			if(!hasFinished()){
 			addDistanceCovered(numberOfCylinders - currentCylinder);
+			requestsServed.add(new Request(0,numberOfCylinders)); // for perfect visualization of algorithm
+			requestsServed.add(new Request(0,0)); // for perfect visualization of algorithm
 			currentCylinder = 0;
 			addElapsedTime(10);
 			}
@@ -284,10 +296,6 @@ public class DiscResource {
 		return Math.abs(r.getCylinderToRead() - currentCylinder);
 	}
 	
-	public int getCurrentTime(){
-		return this.currentTime;
-	}
-	
 	private void addElapsedTime(int timeElapsed){
 		this.currentTime += timeElapsed;
 	}
@@ -308,6 +316,17 @@ public class DiscResource {
 		this.currentCylinder = cylinder;
 	}
 	
+	private void reset(){
+		this.distanceCovered = 0;
+		this.currentTime = 0;
+		this.currentCylinder = 0;
+		this.requestsServed.clear();
+	}
+
+	public int getCurrentTime(){
+		return this.currentTime;
+	}
+
 	public int getDistanceCovered(){
 		return this.distanceCovered;
 	}
@@ -332,16 +351,14 @@ public class DiscResource {
 		}
 	}
 	
-	private void reset(){
-		this.distanceCovered = 0;
-		this.currentTime = 0;
-		this.currentCylinder = 0;
-	}
-	
 	public void printRequestQueue(){
 		Object[]array = requestQueue.toArray();
 		for(int i = 0; i < array.length; i++){
 			System.out.println(array[i].toString());
 		}
+	}
+	
+	public ArrayList<Request> getRequestsServed(){
+		return this.requestsServed;
 	}
 }
